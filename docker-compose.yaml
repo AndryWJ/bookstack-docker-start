@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  bookstack:
+    image: lscr.io/linuxserver/bookstack:latest
+    container_name: ${BOOKSTACK_CONTAINER_NAME}
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - APP_URL=${APP_URL}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+    restart: unless-stopped
+    depends_on:
+      - bookstack_db
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.${BOOKSTACK_TRAEFIK_ROUTER}.rule=Host(`${BOOKSTACK_DOMAIN}`)"
+      - "traefik.http.routers.${BOOKSTACK_TRAEFIK_ROUTER}.service=${BOOKSTACK_TRAEFIK_ROUTER}"
+      - "traefik.http.services.${BOOKSTACK_TRAEFIK_ROUTER}.loadbalancer.server.port=80"
+
+  bookstack_db:
+    image: lscr.io/linuxserver/mariadb:latest
+    container_name: ${BOOKSTACK_DB_CONTAINER_NAME}
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${TZ}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    restart: unless-stopped
+    networks:
+      - default
+
+networks:
+  proxy:
+    external: true
