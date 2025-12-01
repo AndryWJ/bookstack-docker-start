@@ -17,6 +17,8 @@ services:
     restart: unless-stopped
     depends_on:
       - bookstack_db
+    volumes:
+      - my-blog-data:/config
     networks:
       - default
       - proxy
@@ -39,9 +41,14 @@ services:
       - MYSQL_USER=${DB_USERNAME}
       - MYSQL_PASSWORD=${DB_PASSWORD}
     restart: unless-stopped
+    volumes:
+      - my-blog-data-db:/config
     networks:
       - default
 
 networks:
   proxy:
     external: true
+volumes:
+  my-blog-data:
+  my-blog-data-db:
